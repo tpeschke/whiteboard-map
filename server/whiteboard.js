@@ -17,9 +17,12 @@ app.get('/loadMap', (req ,res) => {
     })
 })
 
-app.get('/*', (req, res) => {
-    res.sendFile(path.join(__dirname + '/../dist/bonfireSRD/index.html'))
+const root = require('path').join(__dirname, '../build')
+app.use(express.static(root));
+app.get("*", (req, res) => {
+    res.sendFile('index.html', { root });
 })
+
 // ================================== \\
 massive(databaseCredentials).then(dbInstance => {
     app.set('db', dbInstance);

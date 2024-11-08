@@ -1,12 +1,18 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
+
+import config from './config'
+
 import { Excalidraw } from '@excalidraw/excalidraw';
 import { socket } from './socket'
+import axios from 'axios';
 
 export default function App() {
   const [excalidrawAPI, setExcalidrawAPI] = useState(null);
   const [sendData, setSendData] = useState(false);
   const [pointerLastState, setPointerLastState] = useState(null);
+  const [initialData, setInitialData] = useState({})
+  const [showLoading, setShowLoading] = useState(true)
 
   function makeid() {
     let result = '';
@@ -34,6 +40,12 @@ export default function App() {
     window.addEventListener('keydown', handleKeyPress);
     window.addEventListener('keypress', handleKeyPress);
     window.addEventListener('keyup', handleKeyPress);
+
+    axios.get(config.backendURL + '/loadMap').then(({ data }) => {
+      setInitialData({ elements: data })
+      setShowLoading(false)
+    })
+
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
       window.removeEventListener('keypress', handleKeyPress);
@@ -65,11 +77,17 @@ export default function App() {
   }
 
   return (
-    <Excalidraw
-      excalidrawAPI={(api) => setExcalidrawAPI(api)}
-      gridModeEnabled={true}
-      onChange={captureChange}
-      onPointerUpdate={capturePointerUp}
-    />
+    <>
+      {showLoading && <div>Loading</div>}
+      {!showLoading &&
+        <Excalidraw
+          excalidrawAPI={(api) => setExcalidrawAPI(api)}
+          gridModeEnabled={true}
+          onChange={captureChange}
+          onPointerUpdate={capturePointerUp}
+          initialData={initialData}
+        />
+      }
+    </>
   );
 }
